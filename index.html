@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caricamento CSV</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="Knockout3.5.1.js"></script>
+    <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="jquery3.7.1.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Carica un file CSV</h1>
+        <form id="csvForm" class="mb-4" data-bind="submit: submitForm">
+            <div class="mb-3">
+                <label for="id" class="form-label">ID:</label>
+                <input type="text" class="form-control" id="id" data-bind="value: id" required>
+            </div>
+            <div class="mb-3">
+                <label for="csvFile" class="form-label">File CSV:</label>
+                <input type="file" class="form-control" id="csvFile" data-bind="event: { change: fileChanged }" accept=".csv" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Carica</button>
+        </form>
+
+        <div id="info" class="mb-4" data-bind="visible: showInfo">
+            <h2 data-bind="text: selectedId"></h2>
+            <h4 data-bind="text: currentDate"></h4>
+        </div>
+        <div id="cardsContainer" class="list-group" data-bind="foreach: csvData">
+            <div class="list-group-item">
+                <div class="card">
+                    <div class="card-body">
+                        <!-- Itera sulle chiavi/valori dell'oggetto -->
+                        <div data-bind="foreach: Object.keys($data)">
+                            <p class="card-text"><strong data-bind="text: $data"></strong>: <span data-bind="text: $parent[$data]"></span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+</body>
+</html>
+
+
+<script type="application/javascript">
+
+    $(document).ready(function() {
+
+        formViewManager = new FormViewManager();
+        ko.applyBindings(formViewManager);
+
+    });
+
+
+</script>
