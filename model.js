@@ -19,6 +19,14 @@ function CustomerModel(props){
     self.coldStart = ko.observable(props[9]);
     self.serviceLevel = ko.observable(props[10]);
     self.result = ko.observable(props[11]);
+    self.note = ko.observable('');
+    self.selectedCondition = ko.observable('');
+    self.conditions = [
+        { text: 'POOR CONDITION', color: 'red' },
+        { text: 'AVERAGE CONDITION', color: 'orange' },
+        { text: 'GOOD CONDITION', color: 'yellow' },
+        { text: 'EXCELLENT CONDITION', color: 'green' }
+    ];
 
     self.test = ko.computed(function(){
         var n = 100;

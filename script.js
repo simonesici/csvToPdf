@@ -6,6 +6,8 @@ function FormViewManager() {
     self.csvData = ko.observableArray([]);
     self.showInfo = ko.observable(false);
     self.currentDate = ko.observable('');
+    self.headers = ko.observableArray([]);
+    self.contents = ko.observableArray([]);
 
     self.fileChanged = function(element, event) {
         var file = event.target.files[0];
@@ -26,6 +28,8 @@ function FormViewManager() {
 
                 var data = rows.slice(1).map(row => {
                     var values = row.split(',');
+                    self.contents.push(new CustomerModel(values));
+
                     return headers.reduce((obj, header, index) => {
                         obj[header.trim()] = values[index].trim();
                         return obj;
@@ -34,6 +38,7 @@ function FormViewManager() {
 
                 self.csvData(data);
                 self.showInfo(true);
+                self.headers(headers);
                 self.currentDate(currentDate);
                 self.selectedId(self.id());
 
