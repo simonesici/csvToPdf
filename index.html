@@ -19,7 +19,7 @@
     
 </head>
 <body>
-    <div class="container mt-5">
+    <div class="container mt-5" data-bind="visible: contents().length == 0">
         <h1>Carica un file CSV</h1>
         <form id="csvForm" class="mb-4" data-bind="submit: submitForm">
             <div class="mb-3">
@@ -32,12 +32,18 @@
             </div>
             <button type="submit" class="btn btn-primary">Carica</button>
         </form>
+    </div>
 
-        <div id="info" class="mb-4" data-bind="visible: showInfo">
-            <h2 data-bind="text: selectedId"></h2>
-            <h4 data-bind="text: currentDate"></h4>
+    <div class="container mt-5" data-bind="visible: showInfo">
+        <div id="info" class="row mb-4" >
+            <div class="col-3">
+                <h2 data-bind="text: selectedId"></h2>
+            </div>
+            <div class="col-9">
+                <h4 class="float-end" data-bind="text: currentDate"></h4>
+            </div>
         </div>
-        <div id="cardsContainer" class="list-group">
+        <div id="cardsContainer" class="list-group" >
             <div class="list-group-item" data-bind="foreach: contents">
                 <div class="card m-2">
                     <div class="card-body" >
@@ -84,40 +90,11 @@
                 </div>
             </div>
         </div>
-<!--
-        <div id="cardsContainer" class="list-group" data-bind="foreach: csvData">
-            <div class="list-group-item">
-                <div class="card">
-                    <div class="card-body">
-                        <div data-bind="foreach: Object.keys($data)">
-                            <p class="card-text"><strong data-bind="text: $data"></strong>: <span data-bind="text: $parent[$data]"></span></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <div data-bind="visible: csvData().length > 0">
-            <table class="table table-bordered">
-                <thead>
-                    <tr data-bind="foreach: headers">
-                        <th data-bind="text: $data"></th>
-                    </tr>
-                </thead>
-                <tbody data-bind="foreach: csvData">
-                    <tr data-bind="foreach: $parent.headers">
-                        <td data-bind="text: $parent[$data]"></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        -->
-    </div>
 
-    </div>
-    
-    <div class="col-12">
-        <button id="generatePdfBtn" class="btn btn-primary">scarica pdf</button>
+        <div class="col-12 m-3 p-5">
+            <button id="generatePdfBtn" class="btn btn-primary float-end">scarica pdf</button>
+        </div>
     </div>
 </body>
 </html>
