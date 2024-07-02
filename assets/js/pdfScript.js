@@ -7,7 +7,7 @@ async function generatePdf() {
 
     // Definisci i dati della tabella
     const tableData = [
-        ['AssetID', 'Asset Location', 'Asset Serial Number', 'State']
+        ['ASSET ID', 'ASSET LOCATION', 'ASSET SERIAL NUMBER', 'STATE CONDITION']
     ];
 
 
@@ -35,6 +35,7 @@ async function generatePdf() {
         // Funzione per gestire il testo in overflow
         function drawTextInCell(text, x, y, width) {
             const fontSize = 8;
+            text = typeof text === 'number'? ''+text : text;
             const words = typeof text === 'object'? text.text : text.split(' ');
             let line = '';
             const lines = [];

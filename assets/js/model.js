@@ -7,25 +7,25 @@ function CustomerModel(props){
 
     self.constructorType = "CustomerModel";
 
-    self.assetId = ko.observable(props[1]);
-    self.assetType = ko.observable(props[0]);
-    self.location = ko.observable(props[2]);
-    self.upsSerialNumber = ko.observable(props[3]);
-    self.equipmentBrand = ko.observable(props[4]);
-    self.equipmentModel = ko.observable(props[5]);
-    self.currentCapacity = ko.observable(props[6]);
-    self.assetNumber = ko.observable(props[7]);
-    self.upsType = ko.observable(props[8]);
-    self.coldStart = ko.observable(props[9]);
-    self.serviceLevel = ko.observable(props[10]);
-    self.result = ko.observable(props[11]);
+    self.assetId = ko.observable(props.AssetID);
+    self.assetType = ko.observable(props.AssetType);
+    self.location = ko.observable(props.Location);
+    self.upsSerialNumber = ko.observable(props.UPSFrameserialnumber);
+    self.equipmentBrand = ko.observable(props.EquipmentBrand);
+    self.equipmentModel = ko.observable(props.EquipmentModel);
+    self.currentCapacity = ko.observable(props.CurrentCapacitykva);
+    self.assetNumber = ko.observable(props.Customerassetnumber);
+    self.upsType = ko.observable(props.UPSType);
+    self.coldStart = ko.observable(props.ColdStart);
+    self.serviceLevel = ko.observable(props.ServiceLevel);
+    self.result = ko.observable(props.Result);
     self.note = ko.observable('');
     self.selectedCondition = ko.observable('');
     self.conditions = [
-        { text: 'POOR CONDITION', color: 'red' },
-        { text: 'AVERAGE CONDITION', color: 'orange' },
-        { text: 'GOOD CONDITION', color: 'yellow' },
-        { text: 'EXCELLENT CONDITION', color: 'green' }
+        { text: 'POOR', color: 'red' },
+        { text: 'AVERAGE', color: 'orange' },
+        { text: 'GOOD', color: 'yellow' },
+        { text: 'EXCELLENT', color: 'green' }
     ];
 
     self.test = ko.computed(function(){
