@@ -7,8 +7,8 @@ function CustomerModel(props){
 
     self.constructorType = "CustomerModel";
 
-    self.assetId = ko.observable(props[0]);
-    self.assetType = ko.observable(props[1]);
+    self.assetId = ko.observable(props[1]);
+    self.assetType = ko.observable(props[0]);
     self.location = ko.observable(props[2]);
     self.upsSerialNumber = ko.observable(props[3]);
     self.equipmentBrand = ko.observable(props[4]);

@@ -14,14 +14,14 @@ async function generatePdf() {
     if(formViewManager.contents().length>0){
         $.each(formViewManager.contents(), function(ix, item) {
             let t = item.selectedCondition() != undefined && item.selectedCondition() != null?item.selectedCondition():{text:'',color:'white'};
-            let o = [item.assetId(),item.location(),item.location(),t];
+            let o = [item.assetId(),item.location(),item.upsSerialNumber(),t];
             tableData.push(o);
         });
     
         // Impostazioni per la tabella
         const cellPadding = 5;
         const cellHeight = 35;
-        const cellWidth = [85, 170, 200, 130]; // Larghezze personalizzate per le colonne
+        const cellWidth = [85, 165, 185, 150]; // Larghezze personalizzate per le colonne
         const startX = 5;
         const startY = 820; // Riduci lo spazio tra l'inizio della pagina e la tabella
         let y = startY;
