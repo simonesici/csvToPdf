@@ -18,7 +18,8 @@ async function generatePdf() {
             tableData.push(o);
         });
 
-        buildTable(page, tableData);
+        const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+        buildTable(pdfDoc, page, tableData, font);
 
         // Serializza il documento PDF in un blob
         const pdfBytes = await pdfDoc.save();
@@ -37,7 +38,7 @@ async function generatePdf() {
     }
 }
 
-function buildTable(page, tableData) {
+function buildTable(pdfDoc, page, tableData, font) {
     // Impostazioni per la tabella
     const cellPadding = 5;
     const cellHeight = 35;
@@ -54,11 +55,22 @@ function buildTable(page, tableData) {
             // Calcola la larghezza della cella
             const width = cellWidth[cellIndex];
 
+            // Se è la prima riga (header), colora lo sfondo
+            if (rowIndex === 0) {
+                page.drawRectangle({
+                    x: x,
+                    y: y - cellHeight,
+                    width: width,
+                    height: cellHeight,
+                    color: PDFLib.rgb(0.1, 0.29, 0.49) // Colore grigio chiaro per l'header
+                });
+            }
+
             // Calcola la posizione Y corretta per il testo
             const textY = y - (rowIndex * cellHeight) - cellPadding - 2;
 
             // Disegna il testo nella cella
-            drawTextInCell(cell, x, textY, width - 2 * cellPadding, page, cellPadding);
+            drawTextInCell(cell, x, textY, width - 2 * cellPadding, rowIndex === 0, font, page, cellPadding);
 
             // Se la cella è nella colonna "State", aggiungi il cerchio colorato
             if (rowIndex > 0 && cellIndex === 3) {
@@ -121,8 +133,8 @@ function getTextWidth(text, fontSize) {
 }
 
 // Funzione per gestire il testo in overflow
-function drawTextInCell(text, x, y, width, page, cellPadding) {
-    const fontSize = 8;
+function drawTextInCell(text, x, y, width, isHeader = false, font = null, page, cellPadding) {
+    const fontSize = 9;
     text = typeof text === 'number' ? '' + text : text;
     const words = typeof text === 'object' ? text.text : text.split(' ');
     let line = '';
@@ -130,23 +142,48 @@ function drawTextInCell(text, x, y, width, page, cellPadding) {
 
     for (let n = 0; n < words.length; n++) {
         const testLine = line + words[n] + ' ';
-        const testWidth = getTextWidth(testLine, fontSize);
-        if (testWidth > width && n > 0) {
-            lines.push(line);
-            line = words[n] + ' ';
+        if (font) {
+            const testWidth = font.widthOfTextAtSize(testLine, fontSize);
+            if (testWidth > width && n > 0) {
+                lines.push(line);
+                line = words[n] + ' ';
+            } else {
+                line = testLine;
+            }
         } else {
-            line = testLine;
+            const testWidth = getTextWidth(testLine, fontSize, font);
+            if (testWidth > width && n > 0) {
+                lines.push(line);
+                line = words[n] + ' ';
+            } else {
+                line = testLine;
+            }
         }
     }
     lines.push(line);
 
     lines.forEach((line, index) => {
-        page.drawText(line.trim(), {
-            x: x + cellPadding,
-            y: y - cellPadding - (index * (fontSize + 2)),
-            size: fontSize,
-            color: PDFLib.rgb(0, 0, 0)
-        });
+        let textX = x + cellPadding;
+
+        if (isHeader) {
+            textX = x + (width - font.widthOfTextAtSize(line.trim(), fontSize)) / 2;
+
+            page.drawText(line.trim(), {
+                x: textX,
+                y: y - cellPadding - (index * (fontSize + 2)) - 7,
+                size: fontSize,
+                color: PDFLib.rgb(1, 1, 1),
+                font: font
+            });
+        } else {
+            page.drawText(line.trim(), {
+                x: textX,
+                y: y - cellPadding - (index * (fontSize + 2)),
+                size: fontSize,
+                color: PDFLib.rgb(0, 0, 0),
+                font: font
+            });
+        }
     });
 }
 
