@@ -56,7 +56,7 @@ function buildTable(pdfDoc, page, tableData, font, pageWidth, pageHeight, pageMa
     const cellPadding = 5;
     const cellHeight = 35;
     const cellWidth = [85, 165, 185, 150]; // Larghezze personalizzate per le colonne
-    const cellWidthSecondTable = [35, 120, 60, 60, 60, 250]; // Larghezze personalizzate per le colonne della seconda tabella
+    const cellWidthSecondTable = [85, 165, 100, 100, 100]; // Larghezze personalizzate per le colonne della seconda tabella
     const startX = pageMargin;
     const startY = pageHeight - pageMargin;
     const rowsPerPage = Math.floor((pageHeight - 2 * pageMargin) / cellHeight);
@@ -90,7 +90,7 @@ function buildTable(pdfDoc, page, tableData, font, pageWidth, pageHeight, pageMa
             const textY = y - (rowIndex % rowsPerPage) * cellHeight - cellPadding - 2;
 
             // Disegna il testo nella cella
-            drawTextInCell(cell, x, textY, width - 2 * cellPadding, rowIndex === 0, font, page, cellPadding,9);
+            drawTextInCell(cell, x, textY, width - 2 * cellPadding, rowIndex === 0, font, page, cellPadding, 9);
 
             // Se la cella è nella colonna "State", aggiungi il cerchio colorato
             if (rowIndex > 0 && cellIndex === 3) {
@@ -141,66 +141,85 @@ function buildTable(pdfDoc, page, tableData, font, pageWidth, pageHeight, pageMa
             page = pdfDoc.addPage([pageWidth, pageHeight]);
         }
         let x = startX;
-        row.forEach((cell, cellIndex) => {
-            // Calcola la larghezza della cella
-            const width = cellWidthSecondTable[cellIndex];
 
-            // Se è la prima riga (header), colora lo sfondo
-            if (rowIndex === 0) {
+        let rowHeight = cellHeight;
+        row.forEach((cell, cellIndex) => {
+            if (cellIndex != 5) {
+                // Calcola la larghezza della cella
+                const width = cellWidthSecondTable[cellIndex];
+
+                // Se è la prima riga (header), colora lo sfondo
+                if (rowIndex === 0) {
+                    page.drawRectangle({
+                        x: x,
+                        y: y - cellHeight,
+                        width: width,
+                        height: cellHeight,
+                        color: PDFLib.rgb(0.1, 0.29, 0.49) // Colore blu per l'header
+                    });
+                }
+
+                // Calcola la posizione Y corretta per il testo
+                const textY = y - (rowIndex % rowsPerPage) * cellHeight - cellPadding - 2;
+
+                // Disegna il testo nella cella, centrando l'header
+                drawTextInCell(cell, x, textY, width - 2 * cellPadding, rowIndex % rowsPerPage === 0, font, page, cellPadding, 9);
+
+                // Aumenta l'altezza della riga se necessario
+                const textHeight = (getTextWidth(cell, 12, font)) / width * 12;
+                if (textHeight > rowHeight) {
+                    rowHeight = textHeight;
+                }
+
+                // Se la cella è una delle colonne di stato, aggiungi un campo di selezione
+                if (rowIndex > 0 && (cellIndex === 2 || cellIndex === 3 || cellIndex === 4)) {
+                    const options = ['POOR', 'AVERAGE', 'GOOD', 'EXCELLENT'];
+                    const fieldWidth = width - 2 * cellPadding;
+                    const fieldHeight = cellHeight - 2 * cellPadding;
+                    const fieldX = x + cellPadding;
+                    const fieldY = textY + 8;
+
+                    const form = pdfDoc.getForm();
+                    const dropdown = form.createDropdown('form.' + cellIndex + '.' + rowIndex)
+                    dropdown.setOptions(options)
+                    dropdown.select('POOR')
+
+                    dropdown.addToPage(page, {
+                        x: fieldX,
+                        y: textY - 20,
+                        width: fieldWidth + 2,
+                        height: fieldHeight - 13,
+                        textColor: PDFLib.rgb(0, 0, 0),
+                        backgroundColor: PDFLib.rgb(1, 1, 1),
+                        borderColor: PDFLib.rgb(0, 0, 0),
+                        borderWidth: 1,
+                        rotate: PDFLib.degrees(0),
+                        font: font
+                    })
+                }
+
+                // Disegna i bordi delle celle
                 page.drawRectangle({
                     x: x,
-                    y: y - cellHeight,
+                    y: y - (rowIndex % rowsPerPage) * cellHeight,
                     width: width,
-                    height: cellHeight,
-                    color: PDFLib.rgb(0.1, 0.29, 0.49) // Colore blu chiaro per l'header
+                    height: -cellHeight,
+                    borderColor: PDFLib.rgb(0, 0, 0),
+                    borderWidth: 1
                 });
+                x += width;
             }
-
-            // Calcola la posizione Y corretta per il testo
-            const textY = y - (rowIndex % rowsPerPage) * cellHeight - cellPadding - 2;
-
-            // Disegna il testo nella cella, centrando l'header
-            drawTextInCell(cell, x, textY, width - 2 * cellPadding, rowIndex % rowsPerPage === 0, font, page, cellPadding,7);
-
-            // Se la cella è una delle colonne di stato, aggiungi un campo di selezione
-            if (rowIndex > 0 && (cellIndex === 2 || cellIndex === 3 || cellIndex === 4)) {
-                const options = ['POOR', 'AVERAGE', 'GOOD', 'EXCELLENT'];
-                const fieldWidth = width - 2 * cellPadding;
-                const fieldHeight = cellHeight - 2 * cellPadding;
-                const fieldX = x + cellPadding;
-                const fieldY = textY + 8;
-
-                const form = pdfDoc.getForm();
-                const dropdown = form.createDropdown('form.'+cellIndex+'.'+rowIndex)
-                dropdown.setOptions(options)
-                dropdown.select('POOR')
-
-                dropdown.addToPage(page, {
-                    x: fieldX,
-                    y: textY-20,
-                    width: fieldWidth,
-                    height: fieldHeight-13,
-                    textColor: PDFLib.rgb(0, 0, 0),
-                    backgroundColor: PDFLib.rgb(1, 1, 1),
-                    borderColor: PDFLib.rgb(0, 0, 1),
-                    borderWidth: 1,
-                    rotate: PDFLib.degrees(0),
-                    fontSize: 2,
-                    font: font
-                })
-            }
-
-            // Disegna i bordi delle celle
-            page.drawRectangle({
-                x: x,
-                y: y - (rowIndex % rowsPerPage) * cellHeight,
-                width: width,
-                height: -cellHeight,
-                borderColor: PDFLib.rgb(0, 0, 0),
-                borderWidth: 1
-            });
-            x += width;
         });
+
+        // Aggiungi la riga delle raccomandazioni
+        if(rowIndex > 0){
+            let recommendation = row[5];
+            const textHeight = drawBulletList(recommendation, startX, y - (rowHeight ) - cellPadding, pageWidth - 2 * pageMargin, font, page, cellPadding);
+            if (textHeight > rowHeight) {
+                rowHeight = textHeight;
+            }
+            y -= rowHeight + cellPadding;
+        }
     });
 }
 
@@ -257,7 +276,7 @@ function drawTextInCell(text, x, y, width, isHeader = false, font = null, page, 
 
             page.drawText(line.trim(), {
                 x: textX,
-                y: y - cellPadding - (index * (fontSize + 2)) - 7,
+                y: y - cellPadding - (index * (fontSize + 2)) - 1,
                 size: fontSize,
                 color: PDFLib.rgb(1, 1, 1),
                 font: font
@@ -272,6 +291,24 @@ function drawTextInCell(text, x, y, width, isHeader = false, font = null, page, 
             });
         }
     });
+}
+
+// Funzione per gestire il testo della colonna 'Recommendation'
+function drawBulletList(text, x, y, width, font, page, cellPadding) {
+    const fontSize = 9;
+    const lines = text.split('\n');
+    let textY = y;
+    lines.forEach((line) => {
+        page.drawText(line, {
+            x: x + cellPadding,
+            y: textY,
+            size: fontSize,
+            color: PDFLib.rgb(0, 0, 0),
+            font: font
+        });
+        textY -= fontSize + 2;
+    });
+    return lines.length * (fontSize + 2);
 }
 
 $(document).ready(function () {
