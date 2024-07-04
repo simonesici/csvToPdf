@@ -11,9 +11,13 @@ async function generatePdf() {
         // Dimensioni della pagina A4 in punti (595.28 x 841.89)
         let page = pdfDoc.addPage([pageWidth, pageHeight]);
 
-        // Definisci i dati della tabella
+        // Definisci i dati della tabelle
         const tableData = [
             ['ASSET ID', 'ASSET LOCATION', 'ASSET SERIAL NUMBER', 'STATE CONDITION']
+        ];
+
+        const secondTable = [
+            ['ASSET ID', 'ASSET LOCATION', 'Equipment Electronics Status', 'Battery Status', 'Overall Status', 'Recommendation']
         ];
 
         //carico i dati nella dataTable presi dal csv
@@ -21,10 +25,14 @@ async function generatePdf() {
             let t = item.selectedCondition() != undefined && item.selectedCondition() != null ? item.selectedCondition() : { text: '', color: 'white' };
             let o = [item.assetId(), item.location(), item.upsSerialNumber(), t];
             tableData.push(o);
+
+            let o2 = [item.assetId(), item.location(), '', '', '', item.note()];
+            secondTable.push(o2);
         });
 
         const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
-        buildTable(pdfDoc, page, tableData, font, pageWidth, pageHeight, pageMargin);
+
+        buildTable(pdfDoc, page, tableData, font, pageWidth, pageHeight, pageMargin, secondTable);
 
         // Serializza il documento PDF in un blob
         const pdfBytes = await pdfDoc.save();
@@ -43,11 +51,12 @@ async function generatePdf() {
     }
 }
 
-function buildTable(pdfDoc, page, tableData, font, pageWidth, pageHeight, pageMargin) {
+function buildTable(pdfDoc, page, tableData, font, pageWidth, pageHeight, pageMargin, secondTable) {
     // Impostazioni per la tabella
     const cellPadding = 5;
     const cellHeight = 35;
     const cellWidth = [85, 165, 185, 150]; // Larghezze personalizzate per le colonne
+    const cellWidthSecondTable = [35, 120, 60, 60, 60, 250]; // Larghezze personalizzate per le colonne della seconda tabella
     const startX = pageMargin;
     const startY = pageHeight - pageMargin;
     const rowsPerPage = Math.floor((pageHeight - 2 * pageMargin) / cellHeight);
@@ -67,13 +76,13 @@ function buildTable(pdfDoc, page, tableData, font, pageWidth, pageHeight, pageMa
             const width = cellWidth[cellIndex];
 
             // Se è la prima riga (header), colora lo sfondo
-            if (rowIndex=== 0) {
+            if (rowIndex === 0) {
                 page.drawRectangle({
                     x: x,
                     y: y - cellHeight,
                     width: width,
                     height: cellHeight,
-                    color: PDFLib.rgb(0.1, 0.29, 0.49) // Colore grigio chiaro per l'header
+                    color: PDFLib.rgb(0.1, 0.29, 0.49) // Colore blu chiaro per l'header
                 });
             }
 
@@ -81,7 +90,7 @@ function buildTable(pdfDoc, page, tableData, font, pageWidth, pageHeight, pageMa
             const textY = y - (rowIndex % rowsPerPage) * cellHeight - cellPadding - 2;
 
             // Disegna il testo nella cella
-            drawTextInCell(cell, x, textY, width - 2 * cellPadding, rowIndex === 0, font, page, cellPadding);
+            drawTextInCell(cell, x, textY, width - 2 * cellPadding, rowIndex === 0, font, page, cellPadding,9);
 
             // Se la cella è nella colonna "State", aggiungi il cerchio colorato
             if (rowIndex > 0 && cellIndex === 3) {
@@ -118,6 +127,81 @@ function buildTable(pdfDoc, page, tableData, font, pageWidth, pageHeight, pageMa
             x += width;
         });
     });
+
+
+    // Spazio tra le tabelle
+    y -= (tableData.length % rowsPerPage) * cellHeight + 30;
+
+    page = pdfDoc.addPage([pageWidth, pageHeight]);
+
+    // Aggiungi celle della seconda tabella al PDF
+    secondTable.forEach((row, rowIndex) => {
+        if (rowIndex % rowsPerPage === 0 && rowIndex !== 0) {
+            y = startY;
+            page = pdfDoc.addPage([pageWidth, pageHeight]);
+        }
+        let x = startX;
+        row.forEach((cell, cellIndex) => {
+            // Calcola la larghezza della cella
+            const width = cellWidthSecondTable[cellIndex];
+
+            // Se è la prima riga (header), colora lo sfondo
+            if (rowIndex === 0) {
+                page.drawRectangle({
+                    x: x,
+                    y: y - cellHeight,
+                    width: width,
+                    height: cellHeight,
+                    color: PDFLib.rgb(0.1, 0.29, 0.49) // Colore blu chiaro per l'header
+                });
+            }
+
+            // Calcola la posizione Y corretta per il testo
+            const textY = y - (rowIndex % rowsPerPage) * cellHeight - cellPadding - 2;
+
+            // Disegna il testo nella cella, centrando l'header
+            drawTextInCell(cell, x, textY, width - 2 * cellPadding, rowIndex % rowsPerPage === 0, font, page, cellPadding,7);
+
+            // Se la cella è una delle colonne di stato, aggiungi un campo di selezione
+            if (rowIndex > 0 && (cellIndex === 2 || cellIndex === 3 || cellIndex === 4)) {
+                const options = ['POOR', 'AVERAGE', 'GOOD', 'EXCELLENT'];
+                const fieldWidth = width - 2 * cellPadding;
+                const fieldHeight = cellHeight - 2 * cellPadding;
+                const fieldX = x + cellPadding;
+                const fieldY = textY + 8;
+
+                const form = pdfDoc.getForm();
+                const dropdown = form.createDropdown('form.'+cellIndex+'.'+rowIndex)
+                dropdown.setOptions(options)
+                dropdown.select('POOR')
+
+                dropdown.addToPage(page, {
+                    x: fieldX,
+                    y: textY-20,
+                    width: fieldWidth,
+                    height: fieldHeight-13,
+                    textColor: PDFLib.rgb(0, 0, 0),
+                    backgroundColor: PDFLib.rgb(1, 1, 1),
+                    borderColor: PDFLib.rgb(0, 0, 1),
+                    borderWidth: 1,
+                    rotate: PDFLib.degrees(0),
+                    fontSize: 2,
+                    font: font
+                })
+            }
+
+            // Disegna i bordi delle celle
+            page.drawRectangle({
+                x: x,
+                y: y - (rowIndex % rowsPerPage) * cellHeight,
+                width: width,
+                height: -cellHeight,
+                borderColor: PDFLib.rgb(0, 0, 0),
+                borderWidth: 1
+            });
+            x += width;
+        });
+    });
 }
 
 // Funzione per disegnare i cerchi colorati
@@ -137,8 +221,7 @@ function getTextWidth(text, fontSize) {
 }
 
 // Funzione per gestire il testo in overflow
-function drawTextInCell(text, x, y, width, isHeader = false, font = null, page, cellPadding) {
-    const fontSize = 9;
+function drawTextInCell(text, x, y, width, isHeader = false, font = null, page, cellPadding, fontSize) {
     text = typeof text === 'number' ? '' + text : text;
     const words = typeof text === 'object' ? text.text : text.split(' ');
     let line = '';
