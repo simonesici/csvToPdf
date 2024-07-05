@@ -10,6 +10,42 @@ function FormViewManager() {
     self.headers = ko.observableArray([]);
     self.contents = ko.observableArray([]);
 
+    self.scrollToInput = function(inputId) {
+        var inputElement = document.getElementById(inputId);
+        if (inputElement) {
+            inputElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            inputElement.focus();
+        }
+    };
+
+    self.validateForm = function(){
+        let flagOk = true;
+        let flagOut = true;
+        var id;
+        let i = 0;
+
+        if(formViewManager.contents().length > 0){
+            $.each(self.contents(), function(ix, item){
+                
+            });
+
+            while (i < self.contents().length && flagOut) {
+                if(self.contents()[i].selectedCondition() == undefined){
+                    flagOk = false;
+                    flagOut = false;
+                    id=self.contents()[i].assetId();
+                }
+                i = i + 1;
+            }
+
+            if(flagOk){
+                generatePdf();
+            } else {
+                self.scrollToInput('conditionSelect'+id);
+            }
+        }
+    };
+
     self.fileChanged = function (element, event) {
         var file = event.target.files[0];
         self.file(file);

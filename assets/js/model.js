@@ -33,6 +33,24 @@ function CustomerModel(props){
         return n+" %";
     });
 
+    self.errors = ko.observable({
+        selectedCondition: ko.observable("")
+    });
+
+    self.isValid = function(callback){
+        var e = [];
+        self.errors().selectedCondition("");
+
+        if ($.trim(self.selectedCondition()) == "") {
+            var fieldNome = "selectedCondition";
+            self.errors().descrizione('must be selected');
+            e.push(fieldNome);
+            callback(e.length == 0);
+        }
+
+        callback(e.length == 0);
+    }
+
     self.getModelData = function() {
         var data = {
             assetId: self.assetId(),

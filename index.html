@@ -66,9 +66,10 @@
 
                             <div class="card-text col-4 p-2">
                                 
-                                <select id="conditionSelect" 
+                                <select 
                                         class="form-control" 
-                                        data-bind="options: conditions, 
+                                        data-bind="attr: { 'id': 'conditionSelect' + assetId() },
+                                                   options: conditions, 
                                                    value: selectedCondition,
                                                    optionsCaption: 'Select state condition',
                                                    optionsText: 'text'">
@@ -83,7 +84,13 @@
 
                             <div class="card-text col-12">
                                 <strong >write note</strong>: <br>
-                                <textarea class="form-control" id="noteCustomer" rows="11" data-bind="value: note, valueUpdate: 'afterkeydown'"></textarea>
+                                <textarea class="form-control"
+                                          rows="11" 
+                                          data-bind="attr: { 'id': 'noteCustomer' + assetId() }, 
+                                                     value: note, 
+                                                     valueUpdate: 'afterkeydown'"
+                                >
+                                </textarea>
                             </div>
                         </div>
                     </div>
@@ -93,7 +100,7 @@
 
 
         <div class="col-12 m-3 p-5">
-            <button id="generatePdfBtn" class="btn btn-primary float-end">scarica pdf</button>
+            <button id="generatePdfBtn" class="btn btn-primary float-end" data-bind="click: validateForm">scarica pdf</button>
         </div>
     </div>
 </body>

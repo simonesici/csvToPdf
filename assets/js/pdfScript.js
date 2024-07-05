@@ -338,7 +338,3 @@ function drawBulletList(text, x, y, width, font, page, cellPadding, pdfDoc, page
 
     return wrappedLines.length * (fontSize + 2);
 }
-
-$(document).ready(function () {
-    document.getElementById('generatePdfBtn').addEventListener('click', generatePdf);
-});
