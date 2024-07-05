@@ -144,7 +144,7 @@ function buildTable(pdfDoc, page, tableData, font, pageWidth, pageHeight, pageMa
 function buildSecondTable(pdfDoc, page, secondTable, font, pageWidth, pageHeight, pageMargin, startY) {
     const cellPadding = 5;
     const cellHeight = 35;
-    const cellWidthSecondTable = [90, 190, 100, 100, 105, 200]; // Larghezze personalizzate per le colonne della seconda tabella
+    const cellWidthSecondTable = [75, 170, 85, 85, 170, 200]; // Larghezze personalizzate per le colonne della seconda tabella
     const startX = pageMargin;
     let y = startY;
     const rowsPerPage = Math.floor((pageHeight - 2 * pageMargin) / cellHeight);
@@ -173,9 +173,7 @@ function buildSecondTable(pdfDoc, page, secondTable, font, pageWidth, pageHeight
 
                 const textY = y - cellPadding - 2;
 
-                if (rowIndex == 0 || cellIndex != 4){
-                    drawTextInCell(cell, x, textY, width - 2 * cellPadding, rowIndex === 0, font, page, cellPadding, 9);
-                }
+                drawTextInCell(cell, x, textY, width - 2 * cellPadding, rowIndex === 0, font, page, cellPadding, 9);
 
                 const textHeight = getTextWidth(cell, 12, font) / width * 12;
                 if (textHeight > rowHeight) {
@@ -209,31 +207,24 @@ function buildSecondTable(pdfDoc, page, secondTable, font, pageWidth, pageHeight
                 }
 
                 if (rowIndex > 0 && cellIndex === 4) {
-                    const options = ['Urgent/Critical', 'Improvement Required', 'Non Urgent', 'No action required'];
-                    const fieldWidth = width - 2 * cellPadding;
-                    const fieldHeight = cellHeight - 2 * cellPadding;
-                    const fieldX = x + cellPadding;
-                    const fieldY = textY + 8;
+                    let circleColor = PDFLib.rgb(1, 1, 1);
 
-                    const form = pdfDoc.getForm();
-                    const dropdown = form.createDropdown('form.' + cellIndex + '.' + rowIndex)
-                    dropdown.setOptions(options)
-                    if(cell.text!=""){
-                        dropdown.select(cell.text)
+                    if (cell.color === "red") {
+                        circleColor = PDFLib.rgb(1, 0, 0);
+                    }
+                    if (cell.color === "orange") {
+                        circleColor = PDFLib.rgb(1, 0.5, 0);
+                    }
+                    if (cell.color === "yellow") {
+                        circleColor = PDFLib.rgb(1, 1, 0);
+                    }
+                    if (cell.color === "green") {
+                        circleColor = PDFLib.rgb(0, 0.4, 0);
                     }
 
-                    dropdown.addToPage(page, {
-                        x: fieldX,
-                        y: textY - 20,
-                        width: fieldWidth + 2,
-                        height: fieldHeight - 13,
-                        textColor: PDFLib.rgb(0, 0, 0),
-                        backgroundColor: PDFLib.rgb(1, 1, 1),
-                        borderColor: PDFLib.rgb(0, 0, 0),
-                        borderWidth: 1,
-                        rotate: PDFLib.degrees(0),
-                        font: font
-                    })
+                    const circleX = x + width - cellPadding - 10;
+                    const circleY = textY;
+                    drawColoredCircle(circleX, circleY, circleColor, page);
                 }
 
                 page.drawRectangle({
