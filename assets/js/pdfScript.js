@@ -15,7 +15,7 @@ async function generatePdf() {
 
         const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
 
-        y = buildTable(pdfDoc, page, tableData, font, pageWidth, pageHeight, pageMargin);
+        let y = buildTable(pdfDoc, page, tableData, font, pageWidth, pageHeight, pageMargin);
 
         // Spazio tra le tabelle
         y -= 30;
@@ -278,9 +278,27 @@ function drawTextInCell(text, x, y, width, isHeader = false, font = null, page, 
 
 function drawBulletList(text, x, y, width, font, page, cellPadding) {
     const fontSize = 9;
-    const lines = text.split('\n');
+    let lines = text.split('\n');
+
+    // Wrap lines if necessary
+    const wrappedLines = [];
+    lines.forEach(line => {
+        let currentLine = '';
+        line.split(' ').forEach(word => {
+            const testLine = currentLine + word + ' ';
+            const testWidth = font.widthOfTextAtSize(testLine, fontSize);
+            if (testWidth > width - 2 * cellPadding) {
+                wrappedLines.push(currentLine.trim());
+                currentLine = word + ' ';
+            } else {
+                currentLine = testLine;
+            }
+        });
+        wrappedLines.push(currentLine.trim());
+    });
+
     let textY = y;
-    lines.forEach((line) => {
+    wrappedLines.forEach((line) => {
         page.drawText(line, {
             x: x + cellPadding,
             y: textY,
@@ -290,7 +308,8 @@ function drawBulletList(text, x, y, width, font, page, cellPadding) {
         });
         textY -= fontSize + 2;
     });
-    return lines.length * (fontSize + 2);
+
+    return wrappedLines.length * (fontSize + 2);
 }
 
 $(document).ready(function () {
