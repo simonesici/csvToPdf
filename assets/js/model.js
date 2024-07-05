@@ -22,10 +22,10 @@ function CustomerModel(props){
     self.note = ko.observable('');
     self.selectedCondition = ko.observable('');
     self.conditions = [
-        { text: 'POOR', color: 'red', code: 3 },
-        { text: 'AVERAGE', color: 'orange', code: 2 },
-        { text: 'GOOD', color: 'yellow', code: 1 },
-        { text: 'EXCELLENT', color: 'green', code: 0 }
+        { text: 'Urgent/Critical', color: 'red', code: 3 },
+        { text: 'Improvement Required', color: 'yellow', code: 2 },
+        { text: 'Non Urgent', color: 'orange', code: 1 },
+        { text: 'No action required', color: 'green', code: 0 }
     ];
 
     self.test = ko.computed(function(){
