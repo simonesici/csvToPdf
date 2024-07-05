@@ -100,6 +100,16 @@ function buildTable(pdfDoc, page, tableData, font, pageWidth, pageHeight, pageMa
                 });
             }
 
+            if (rowIndex > 0 && cellIndex === 0) {
+                page.drawRectangle({
+                    x: x,
+                    y: y - cellHeight,
+                    width: width,
+                    height: cellHeight,
+                    color: PDFLib.rgb(0.36, 0.58, 0.68) // Colore blu chiaro per la prima colonna
+                });
+            }
+
             const textY = y - cellPadding - 2;
 
             drawTextInCell(cell, x, textY, width - 2 * cellPadding, rowIndex === 0, font, page, cellPadding, 9);
@@ -168,6 +178,16 @@ function buildSecondTable(pdfDoc, page, secondTable, font, pageWidth, pageHeight
                         width: width,
                         height: cellHeight,
                         color: PDFLib.rgb(0.1, 0.29, 0.49) // Colore blu per l'header
+                    });
+                }
+
+                if (rowIndex > 0 && cellIndex === 0) {
+                    page.drawRectangle({
+                        x: x,
+                        y: y - cellHeight,
+                        width: width,
+                        height: cellHeight,
+                        color: PDFLib.rgb(0.36, 0.58, 0.68) // Colore blu chiaro per la prima colonna
                     });
                 }
 
