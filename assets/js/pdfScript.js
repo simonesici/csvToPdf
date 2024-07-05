@@ -149,7 +149,7 @@ function buildSecondTable(pdfDoc, page, secondTable, font, pageWidth, pageHeight
     const rowsPerPage = Math.floor((pageHeight - 2 * pageMargin) / cellHeight);
 
     secondTable.forEach((row, rowIndex) => {
-        if (rowIndex % rowsPerPage === 0 && rowIndex !== 0) {
+        if (y - cellHeight < pageMargin) { // Verifica se c'è spazio sufficiente per la riga successiva
             y = pageHeight - pageMargin;
             page = pdfDoc.addPage([pageWidth, pageHeight]);
         }
@@ -299,6 +299,11 @@ function drawBulletList(text, x, y, width, font, page, cellPadding) {
 
     let textY = y;
     wrappedLines.forEach((line) => {
+        if (textY < fontSize + cellPadding) { // Check if there's enough space to draw
+            page = pdfDoc.addPage([pageWidth, pageHeight]);
+            textY = pageHeight - pageMargin;
+        }
+
         page.drawText(line, {
             x: x + cellPadding,
             y: textY,
