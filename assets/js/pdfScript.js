@@ -143,7 +143,7 @@ function buildTable(pdfDoc, page, tableData, font, pageWidth, pageHeight, pageMa
 function buildSecondTable(pdfDoc, page, secondTable, font, pageWidth, pageHeight, pageMargin, startY) {
     const cellPadding = 5;
     const cellHeight = 35;
-    const cellWidthSecondTable = [85, 165, 100, 100, 100, 200]; // Larghezze personalizzate per le colonne della seconda tabella
+    const cellWidthSecondTable = [90, 190, 100, 100, 100, 200]; // Larghezze personalizzate per le colonne della seconda tabella
     const startX = pageMargin;
     let y = startY;
     const rowsPerPage = Math.floor((pageHeight - 2 * pageMargin) / cellHeight);
