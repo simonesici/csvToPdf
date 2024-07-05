@@ -37,7 +37,8 @@ async function generatePdf() {
         // Crea un link per scaricare il PDF
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'tabella.pdf';
+        var nameFile=formViewManager.selectedId()+"_"+formViewManager.currentDate();
+        a.download = nameFile;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -65,8 +66,10 @@ function generateSecondTableData() {
 
     $.each(formViewManager.contents(), function (ix, item) {
         let t = item.selectedCondition() != undefined && item.selectedCondition() != null ? item.selectedCondition() : { text: '', color: 'white' };
-        let o2 = [item.assetId(), item.location(), '', '', t, item.note()];
-        secondTable.push(o2);
+        if(item.selectedCondition().code != 0){
+            let o2 = [item.assetId(), item.location(), '', '', t, item.note()];
+            secondTable.push(o2);
+        }
     });
 
     return secondTable;
@@ -159,116 +162,118 @@ function buildSecondTable(pdfDoc, page, secondTable, font, pageWidth, pageHeight
     let y = startY;
     const rowsPerPage = Math.floor((pageHeight - 2 * pageMargin) / cellHeight);
 
-    secondTable.forEach((row, rowIndex) => {
-        if (y - cellHeight < pageMargin) { // Verifica se c'è spazio sufficiente per la riga successiva
-            y = pageHeight - pageMargin;
-            page = pdfDoc.addPage([pageWidth, pageHeight]);
-        }
-
-        let x = startX;
-        let rowHeight = cellHeight;
-        row.forEach((cell, cellIndex) => {
-            if (cellIndex != 5) {
-                const width = cellWidthSecondTable[cellIndex];
-
-                if (rowIndex === 0) {
+    if(secondTable.length>1){
+        secondTable.forEach((row, rowIndex) => {
+            if (y - cellHeight < pageMargin) { // Verifica se c'è spazio sufficiente per la riga successiva
+                y = pageHeight - pageMargin;
+                page = pdfDoc.addPage([pageWidth, pageHeight]);
+            }
+    
+            let x = startX;
+            let rowHeight = cellHeight;
+            row.forEach((cell, cellIndex) => {
+                if (cellIndex != 5) {
+                    const width = cellWidthSecondTable[cellIndex];
+    
+                    if (rowIndex === 0) {
+                        page.drawRectangle({
+                            x: x,
+                            y: y - cellHeight,
+                            width: width,
+                            height: cellHeight,
+                            color: PDFLib.rgb(0.1, 0.29, 0.49) // Colore blu per l'header
+                        });
+                    }
+    
+                    if (rowIndex > 0 && cellIndex === 0) {
+                        page.drawRectangle({
+                            x: x,
+                            y: y - cellHeight,
+                            width: width,
+                            height: cellHeight,
+                            color: PDFLib.rgb(0.36, 0.58, 0.68) // Colore blu chiaro per la prima colonna
+                        });
+                    }
+    
+                    const textY = y - cellPadding - 2;
+    
+                    drawTextInCell(cell, x, textY, width - 2 * cellPadding, rowIndex === 0, font, page, cellPadding, 9);
+    
+                    const textHeight = getTextWidth(cell, 12, font) / width * 12;
+                    if (textHeight > rowHeight) {
+                        rowHeight = textHeight;
+                    }
+    
+                    if (rowIndex > 0 && (cellIndex === 2 || cellIndex === 3)) {
+                        const options = ['POOR', 'AVERAGE', 'GOOD', 'EXCELLENT'];
+                        const fieldWidth = width - 2 * cellPadding;
+                        const fieldHeight = cellHeight - 2 * cellPadding;
+                        const fieldX = x + cellPadding;
+                        const fieldY = textY + 8;
+    
+                        const form = pdfDoc.getForm();
+                        const dropdown = form.createDropdown('form.' + cellIndex + '.' + rowIndex)
+                        dropdown.setOptions(options)
+                        //dropdown.select('POOR')
+    
+                        dropdown.addToPage(page, {
+                            x: fieldX,
+                            y: textY - 20,
+                            width: fieldWidth + 2,
+                            height: fieldHeight - 13,
+                            textColor: PDFLib.rgb(0, 0, 0),
+                            backgroundColor: PDFLib.rgb(1, 1, 1),
+                            borderColor: PDFLib.rgb(0, 0, 0),
+                            borderWidth: 1,
+                            rotate: PDFLib.degrees(0),
+                            font: font
+                        })
+                    }
+    
+                    if (rowIndex > 0 && cellIndex === 4) {
+                        let circleColor = PDFLib.rgb(1, 1, 1);
+    
+                        if (cell.color === "red") {
+                            circleColor = PDFLib.rgb(1, 0, 0);
+                        }
+                        if (cell.color === "orange") {
+                            circleColor = PDFLib.rgb(1, 0.5, 0);
+                        }
+                        if (cell.color === "yellow") {
+                            circleColor = PDFLib.rgb(1, 1, 0);
+                        }
+                        if (cell.color === "green") {
+                            circleColor = PDFLib.rgb(0, 0.4, 0);
+                        }
+    
+                        const circleX = x + width - cellPadding - 10;
+                        const circleY = textY;
+                        drawColoredCircle(circleX, circleY, circleColor, page);
+                    }
+    
                     page.drawRectangle({
                         x: x,
                         y: y - cellHeight,
                         width: width,
                         height: cellHeight,
-                        color: PDFLib.rgb(0.1, 0.29, 0.49) // Colore blu per l'header
-                    });
-                }
-
-                if (rowIndex > 0 && cellIndex === 0) {
-                    page.drawRectangle({
-                        x: x,
-                        y: y - cellHeight,
-                        width: width,
-                        height: cellHeight,
-                        color: PDFLib.rgb(0.36, 0.58, 0.68) // Colore blu chiaro per la prima colonna
-                    });
-                }
-
-                const textY = y - cellPadding - 2;
-
-                drawTextInCell(cell, x, textY, width - 2 * cellPadding, rowIndex === 0, font, page, cellPadding, 9);
-
-                const textHeight = getTextWidth(cell, 12, font) / width * 12;
-                if (textHeight > rowHeight) {
-                    rowHeight = textHeight;
-                }
-
-                if (rowIndex > 0 && (cellIndex === 2 || cellIndex === 3)) {
-                    const options = ['POOR', 'AVERAGE', 'GOOD', 'EXCELLENT'];
-                    const fieldWidth = width - 2 * cellPadding;
-                    const fieldHeight = cellHeight - 2 * cellPadding;
-                    const fieldX = x + cellPadding;
-                    const fieldY = textY + 8;
-
-                    const form = pdfDoc.getForm();
-                    const dropdown = form.createDropdown('form.' + cellIndex + '.' + rowIndex)
-                    dropdown.setOptions(options)
-                    //dropdown.select('POOR')
-
-                    dropdown.addToPage(page, {
-                        x: fieldX,
-                        y: textY - 20,
-                        width: fieldWidth + 2,
-                        height: fieldHeight - 13,
-                        textColor: PDFLib.rgb(0, 0, 0),
-                        backgroundColor: PDFLib.rgb(1, 1, 1),
                         borderColor: PDFLib.rgb(0, 0, 0),
-                        borderWidth: 1,
-                        rotate: PDFLib.degrees(0),
-                        font: font
-                    })
+                        borderWidth: 0.6
+                    });
+    
+                    x += width;
                 }
-
-                if (rowIndex > 0 && cellIndex === 4) {
-                    let circleColor = PDFLib.rgb(1, 1, 1);
-
-                    if (cell.color === "red") {
-                        circleColor = PDFLib.rgb(1, 0, 0);
-                    }
-                    if (cell.color === "orange") {
-                        circleColor = PDFLib.rgb(1, 0.5, 0);
-                    }
-                    if (cell.color === "yellow") {
-                        circleColor = PDFLib.rgb(1, 1, 0);
-                    }
-                    if (cell.color === "green") {
-                        circleColor = PDFLib.rgb(0, 0.4, 0);
-                    }
-
-                    const circleX = x + width - cellPadding - 10;
-                    const circleY = textY;
-                    drawColoredCircle(circleX, circleY, circleColor, page);
-                }
-
-                page.drawRectangle({
-                    x: x,
-                    y: y - cellHeight,
-                    width: width,
-                    height: cellHeight,
-                    borderColor: PDFLib.rgb(0, 0, 0),
-                    borderWidth: 0.6
-                });
-
-                x += width;
+            });
+    
+            if (rowIndex > 0) {
+                let recommendation = row[5];
+                y -= rowHeight + cellPadding;
+                const textHeight = drawBulletList(recommendation, startX, y - cellPadding, pageWidth - 2 * pageMargin, font, page, cellPadding, pdfDoc, pageWidth, pageHeight, pageMargin);
+                y -= textHeight + cellPadding;
+            } else {
+                y -= rowHeight;
             }
         });
-
-        if (rowIndex > 0) {
-            let recommendation = row[5];
-            y -= rowHeight + cellPadding;
-            const textHeight = drawBulletList(recommendation, startX, y - cellPadding, pageWidth - 2 * pageMargin, font, page, cellPadding, pdfDoc, pageWidth, pageHeight, pageMargin);
-            y -= textHeight + cellPadding;
-        } else {
-            y -= rowHeight;
-        }
-    });
+    }
 }
 
 function drawColoredCircle(x, y, color, page) {
